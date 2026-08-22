@@ -12,7 +12,7 @@ This repository contains small programs and exercises focusing on different prog
 *   **`Sum-Substration-Multiplication.cpp`**: Working with basic arithmetic operators and mathematical calculations.
 *   **`Switch (case).cpp`**: Implementing the `switch-case` control flow structure for decision-making.
 
-## 🛠️ How to Run
+## How to Run
 
 To compile and execute any of these files locally, you will need a C++ compiler (like GCC). Open your terminal and run the following commands:
 
