@@ -1,0 +1,21 @@
+# Compiled binaries and build directories
+build/
+bin/
+out/
+*.exe
+*.out
+*.o
+*.obj
+
+# Debug files
+*.dSYM/
+*.pdb
+*.ilk
+
+# IDE and Editor configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
