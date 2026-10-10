@@ -1,0 +1,68 @@
+name: LinkedIn Post on Push
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  post-to-linkedin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post to LinkedIn
+        run: |
+          # Build the message
+          REPO="${{ github.repository }}"
+          BRANCH="${{ github.ref_name }}"
+          PUSHER="${{ github.actor }}"
+          COMPARE="${{ github.event.compare }}"
+          COMMIT_MSG=$(echo '${{ toJSON(github.event.head_commit.message) }}' | sed 's/^"//;s/"$//')
+
+          MESSAGE="🚀 New push to ${REPO} (${BRANCH}) by ${PUSHER}
+
+          📝 ${COMMIT_MSG}
+
+          🔗 ${COMPARE}
+
+          #OpenSource #GitHub #DevUpdate"
+
+          # Build the JSON payload
+          PAYLOAD=$(cat <<EOF
+          {
+            "author": "${{ secrets.LINKEDIN_PERSON_URN }}",
+            "lifecycleState": "PUBLISHED",
+            "specificContent": {
+              "com.linkedin.ugc.ShareContent": {
+                "shareCommentary": {
+                  "text": $(echo "$MESSAGE" | jq -Rs .)
+                },
+                "shareMediaCategory": "NONE"
+              }
+            },
+            "visibility": {
+              "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+            }
+          }
+          EOF
+          )
+
+          # Post to LinkedIn
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.linkedin.com/v2/ugcPosts" \
+            -H "Authorization: Bearer ${{ secrets.LINKEDIN_ACCESS_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -H "X-Restli-Protocol-Version: 2.0.0" \
+            -d "$PAYLOAD")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ Published to LinkedIn successfully!"
+          else
+            echo "❌ Failed to publish to LinkedIn"
+            exit 1
+          fi
